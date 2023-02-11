@@ -58,7 +58,7 @@ function update(){
 	}
 	for(var i=0;i<equipment_names[eqtab].length;i++){
 		if((equipments[eqtab][i]||0)>0 || (eqlevels[eqtab][i]||0)>0){
-			eq_log=eq_log+"<br>"+equipment_names[eqtab][i]+((eqlevels[eqtab][i]||0)>0?"+"+eqlevels[eqtab][i]:"")+"x"+format(equipments[eqtab][i]||0);
+			eq_log=eq_log+"<br>"+equipment_names[eqtab][i]+((eqlevels[eqtab][i]||0)>0?"+"+eqlevels[eqtab][i]:"")+" x"+format(equipments[eqtab][i]||0);
 			if(eqtab==3&&i==0)eq_log=eq_log+"(+"+format((geteqeffs(3,0)-1)*100)+"% PP)";
 			if(eqtab==3&&i==1)eq_log=eq_log+"(+"+format((geteqeffs(3,1)-1)*100)+"% HP)";
 			if(eqtab==3&&i==2)eq_log=eq_log+"(+"+format((geteqeffs(3,2)-1)*100)+"% Crit Chance)";
