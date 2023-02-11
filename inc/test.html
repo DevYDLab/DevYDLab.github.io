@@ -972,7 +972,7 @@ function add(x,y){
 	if(x==1&&highest_progress>=180)hp+=y*(pu[2]||0)*Math.max(Math.floor((pu[2]||0)**0.8-5),3);
 	if(x==2)atk+=y;
 	if(x==3)def+=y;
-	if(x==4)luk+=y;
+	if(x==4)luk+=y*2;
 }
 function exportsave(){
 	return btoa(exp+","+hp+","+atk+","+def+","+luk+","+points+","+btoa(JSON.stringify(equipments))+","+energy+","+progress+","+pp+","+highest_progress+","+btoa(JSON.stringify(pu))+","+btoa(JSON.stringify(eqlevels))+","+chall+","+btoa(JSON.stringify(challlvs))+","+tower+","+tp+","+transcendlv);
