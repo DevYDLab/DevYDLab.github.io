@@ -1283,7 +1283,10 @@ setInterval(update,20);
 </head>
 <body>
 Level: <span id="lv"></span><br>
-Power: <span id="power"></span> Energy: <span id="energy"></span> Prestige Points: <span id="prestige"></span><br>
+Power: <span id="power"></span>
+Energy: <span id="energy"></span>
+Prestige Points: <span id="prestige"></span><br>
+<br>
 HP: <span id="hp"></span> <a href="javascript:add(1,0.25)">Spend 25%</a> <a href="javascript:add(1,0.5)">Spend 50%</a> <a href="javascript:add(1,1)">Spend All</a><br>
 ATK: <span id="atk"></span> <a href="javascript:add(2,0.25)">Spend 25%</a> <a href="javascript:add(2,0.5)">Spend 50%</a> <a href="javascript:add(2,1)">Spend All</a><br>
 DEF: <span id="def"></span> <a href="javascript:add(3,0.25)">Spend 25%</a> <a href="javascript:add(3,0.5)">Spend 50%</a> <a href="javascript:add(3,1)">Spend All</a><br>
@@ -1296,7 +1299,6 @@ Stat Points: <span id="points"></span><br>
 <a href="javascript:settab(4);" style="display:none;" id="chall_tab">Challenges</a>
 <a href="javascript:settab(5);" style="display:none;" id="tower_tab">The Tower</a>
 <a href="javascript:settab(2);">Save</a>
-<a href="zbkc.html">中文版</a>
 <div id="tab0" style="display:none;">
 <span id="energyc" style="display:none;">Energy Cost Settings: <input id="energycinput" type="range" min="0" max="2" step="1" value="1"><span id="energyc_eff"></span><br></span>
 <div id="diffselect" style="display:none;">Select Difficulty: <a id="diff0" href="javascript:setdiff(0);">Easy</a> <a id="diff1" style="display:none;" href="javascript:setdiff(1);">Normal</a> <a id="diff2" style="display:none;" href="javascript:setdiff(2);">Hard</a></div>
