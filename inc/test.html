@@ -944,8 +944,8 @@ function geteqeff(x){
 	for(var i=0;i<equipment_names[x].length;i++){
 		result*=geteqeffs(x,i);
 	}
-	if(x==2)result=result**0.5;
-	if(x==2&&result>=2)result=Math.log2(result)**0.6+1;
+	if(x==2)result=result**0.6;
+	if(x==2&&result>=2)result=Math.log2(result)+1;
 	if(x==4)result=result**0.2;
 	if(x==4&&highest_progress>=70)result=result**1.5;
 	if(x==4&&highest_progress>=90)result=result**1.1;
