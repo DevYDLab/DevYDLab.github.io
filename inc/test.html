@@ -1225,7 +1225,7 @@ function startchall(x){
 	}
 }
 function challeff(x){
-	if(highest_progress<75&&x==2)return 0;
+	if(highest_progress<=75&&x==2)return 0;
 	if(highest_progress<75)return 1;
 	var temp=(challlvs[x]||0)+1;
 	temp=Math.log10(temp);
