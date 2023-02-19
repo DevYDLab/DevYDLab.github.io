@@ -40,8 +40,8 @@ var rMax = [20,-1,10,30,30,10];
 var ru = [0,0,0,0,0,0];
 var rValue = [1000,10,5,1,0.5,0.01];
 var rValue_init = [1000,10,5,1,0.5,0.01];
-var rPrice = [1,100,100,100000,100000,10000000];
-var rPrice_init = [1,100,100,100000,100000,10000000];
+var rPrice = [2,100,100,100000,100000,10000000];
+var rPrice_init = [2,100,100,100000,100000,10000000];
 
 var spd_inter;
 
@@ -86,7 +86,7 @@ function update() {
 	for (var i = 0; i <= rProg; i++) { // 해금된 것까지만 출력
 		updateValue_r(i);
 		updatePrice_r(i);
-		document.getElementById("rValue"+i).innerHTML = abcFormat(rValue[i]);
+		document.getElementById("rValue"+i).innerHTML = abcFormat(rValue[i] * (i==0 ? 1000 : 0));
 		document.getElementById("rPrice"+i).innerHTML = (ru[i]==rMax[i] ? "Infinity" : abcFormat(rPrice[i]))
 		document.getElementById("rLv"+i).innerHTML = ru[i] + (rMax[i] != -1 && ru[i]>=rMax[i] ? " (Max)" : "");
 	}
@@ -106,7 +106,7 @@ function prepare() {
 	gold_tot = gold + r_igold;
 }
 function restrictedDisplay() {
-	if (gold_tot >= 1e9 || rp > 0) {
+	if (gold_tot >= 1e9 || max_rp > 0) {
 		document.getElementById("rebDisp").style.display = "inline";
 		document.getElementById("rpDisp").style.display = "inline";
 		document.getElementById("rp").innerHTML = abcFormat(rp);
@@ -182,7 +182,7 @@ function updateValue_u_onLoad(x,y) {
 			if (x==0) {
 				tt = 1;
 				for (var j = 0; j < i; j++) {
-					tt = tt + Math.flor(tt**0.6);
+					tt = tt + Math.floor(tt**0.6);
 				}
 				temp += tt;
 			} else if (x==1) {
@@ -202,7 +202,7 @@ function updateValue_u_onLoad(x,y) {
 function updateValue_r(x) {
 	var temp = 0;
 	if (x<6) temp = rValue_init[x];
-	if (x==0) temp = rValue_init[x]**(ru[x]+1);
+	if (x==0) temp = rValue_init[x]**(ru[x]); // 1e3 1e6 1e9...
 	rValue[x] = temp;
 }
 function updatePrice_r(x) {
@@ -234,13 +234,18 @@ function rebirth() {
 	rProg = 2;
 	for(var i = 2; i < u.length; i++) document.getElementById("u"+i).style.display = "none";
 	for(var i = 3; i < ru.length; i++) document.getElementById("r"+i).style.display = "none";
-	updateProgress(gold,0);
-	updateProgress(rp,1);
+	updateProgress(gold_tot,0);
+	updateProgress(max_rp,1);
 	update_onLoad();
 }
-function initRebirthUpgrades() { // 짜는중
+function rpReset() {
 	ru = [0,0,0,0,0,0];
+	rValue = rValue_init;
+	init_r();
+	rp = getMaxRP();
 	rProg = 2;
+	for(var i = 3; i < ru.length; i++) document.getElementById("r"+i).style.display = "none";
+	updateProgress(max_rp,1);
 }
 function uLevelUp(x) {
 	if(uMax[x] > 0 && u[x] >= uMax[x]) return;
@@ -271,7 +276,7 @@ function autoGold() {
 	gold += Math.floor(Math.pow((ffatk**exp1)*(final_spd**exp2)*mul1,exp3));
 	document.getElementById("gold").innerHTML = abcFormat(gold_tot);
 	updateProgress(gold_tot,0);
-	updateProgress(rp,1);
+	updateProgress(max_rp,1);
 }
 function getInfo() {
 	document.getElementById("aperTot").innerHTML = aper_tot;
@@ -329,17 +334,18 @@ function load() {
 		max_rp = parseFloat(atob(t[5]));
 		prepare();
 		updateProgress(gold_tot,0);
-		updateProgress(rp,1);
+		updateProgress(max_rp,1);
 		update_onLoad();
 		document.getElementById("saveloadtxt").innerHTML = "Load Complete!";
-	} catch {
+	} catch(e) {
+		console.log(e);
 		document.getElementById("saveloadtxt").innerHTML = "Invalid Save Data...";
 	}
 }
 function onLoadError() {
 	prepare();
 	updateProgress(gold_tot,0);
-	updateProgress(rp,1);
+	updateProgress(max_rp,1);
 	update_onLoad();
 	document.getElementById("saveloadtxt").innerHTML = "Old Version Load Complete!";
 }
@@ -349,7 +355,10 @@ function abcFormat(x) {
 	var a = Math.floor(Math.log10(x));
 	var b = Math.floor(a/3);
 	var c = x / Math.pow(1000, b);
-	return c.toFixed(2-a+3*b) + " " + (Math.floor(b/26) ? String.fromCharCode(64+Math.floor(b/26)) : "") + String.fromCharCode(64+(b%26));
+	var f = Math.floor(b/26);
+	var s = b % 26;
+	if (f>0 && s==0) {	f--; s=26	}
+	return c.toFixed(2-a+3*b) + " " + (f>0 ? String.fromCharCode(64+f) : "") + String.fromCharCode(64+s);
 }
 
 setInterval(update,200);
@@ -390,15 +399,15 @@ Initial SPD Upgrade : <span id="initSPD"></span> Lv<br>
 <span id="m2" style="display:none;">
 <span id="u0"><a href="javascript:uLevelUp(0);">[Lv.<span id="uLv0"></span>] Increase Attack Power : ATK +<span id="uValue0"></span> (Price : <span id="uPrice0"></span>)</a><br></span>
 <span id="u1"><a href="javascript:uLevelUp(1);">[Lv.<span id="uLv1"></span>] Increase Attack Speed : SPD +<span id="uValue1"></span> (Price : <span id="uPrice1"></span>)</a><br></span>
-<span id="u2"><a href="javascript:uLevelUp(2);">[Lv.<span id="uLv2"></span>] Increase Attack Power % : ATK +<span id="uValue2"></span>% (Price : <span id="uPrice2"></span>)</a><br></span>
-<span id="u3"><a href="javascript:uLevelUp(3);">[Lv.<span id="uLv3"></span>] Increase Gold Income % : GOLD +<span id="uValue3"></span>% (Price : <span id="uPrice3"></span>)</a><br></span>
-<span id="u4"><a href="javascript:uLevelUp(4);">[Lv.<span id="uLv4"></span>] Increase Attack Power Exponent : (Price : <span id="uPrice4"></span>)</a><br></span>
-<span id="u5"><a href="javascript:uLevelUp(5);">[Lv.<span id="uLv5"></span>] Increase Attack Speed Exponent : (Price : <span id="uPrice5"></span>)</a><br></span>
-<span id="u6"><a href="javascript:uLevelUp(6);">[Lv.<span id="uLv6"></span>] Gold Income Becomes Exponential : Exponent +<span id="uValue6"></span> (Price : <span id="uPrice6"></span>)</a><br></span>
-<span id="u7"><a href="javascript:uLevelUp(7);">[Lv.<span id="uLv7"></span>] Increase Critical Rate : +<span id="uValue7"></span>% (Price : <span id="uPrice7"></span>)</a><br></span>
-<span id="u8"><a href="javascript:uLevelUp(8);">[Lv.<span id="uLv8"></span>] Increase Critical Damage : +<span id="uValue8"></span>% (Price : <span id="uPrice8"></span>)</a><br></span>
-<span id="u9"><br><a href="javascript:uLevelUp(9);">[Lv.<span id="uLv9"></span>] Unlock Critical Rate/Damage (Price : <span id="uPrice9"></span>)</a><br></span>
-<span id="u10"><a href="javascript:uLevelUp(10);">[Lv.<span id="uLv10"></span>] End This Game (Price : <span id="uPrice10"></span>)</a><br></span>
+<span id="u2" style="display:none;"><a href="javascript:uLevelUp(2);">[Lv.<span id="uLv2"></span>] Increase Attack Power % : ATK +<span id="uValue2"></span>% (Price : <span id="uPrice2"></span>)</a><br></span>
+<span id="u3" style="display:none;"><a href="javascript:uLevelUp(3);">[Lv.<span id="uLv3"></span>] Increase Gold Income % : GOLD +<span id="uValue3"></span>% (Price : <span id="uPrice3"></span>)</a><br></span>
+<span id="u4" style="display:none;"><a href="javascript:uLevelUp(4);">[Lv.<span id="uLv4"></span>] Increase Attack Power Exponent : (Price : <span id="uPrice4"></span>)</a><br></span>
+<span id="u5" style="display:none;"><a href="javascript:uLevelUp(5);">[Lv.<span id="uLv5"></span>] Increase Attack Speed Exponent : (Price : <span id="uPrice5"></span>)</a><br></span>
+<span id="u6" style="display:none;"><a href="javascript:uLevelUp(6);">[Lv.<span id="uLv6"></span>] Gold Income Becomes Exponential : Exponent +<span id="uValue6"></span> (Price : <span id="uPrice6"></span>)</a><br></span>
+<span id="u7" style="display:none;"><a href="javascript:uLevelUp(7);">[Lv.<span id="uLv7"></span>] Increase Critical Rate : +<span id="uValue7"></span>% (Price : <span id="uPrice7"></span>)</a><br></span>
+<span id="u8" style="display:none;"><a href="javascript:uLevelUp(8);">[Lv.<span id="uLv8"></span>] Increase Critical Damage : +<span id="uValue8"></span>% (Price : <span id="uPrice8"></span>)</a><br></span>
+<span id="u9" style="display:none;"><br><a href="javascript:uLevelUp(9);">[Lv.<span id="uLv9"></span>] Unlock Critical Rate/Damage (Price : <span id="uPrice9"></span>)</a><br></span>
+<span id="u10" style="display:none;"><a href="javascript:uLevelUp(10);">[Lv.<span id="uLv10"></span>] End This Game (Price : <span id="uPrice10"></span>)</a><br></span>
 </span>
 
 <span id="m3" style="display:none;">
@@ -411,9 +420,11 @@ You can get <span id="rebGetRp" style="color:red;"></span> now.<br>
 <span id="r0"><a href="javascript:rLevelUp(0);">[Lv.<span id="rLv0"></span>] Initial Gold : <span id="rValue0"></span> (Price : <span id="rPrice0"></span>)</a><br></span>
 <span id="r1"><a href="javascript:rLevelUp(1);">[Lv.<span id="rLv1"></span>] Initial ATK Upgrades : +<span id="rValue1"></span> Lv (Price : <span id="rPrice1"></span>)</a><br></span>
 <span id="r2"><a href="javascript:rLevelUp(2);">[Lv.<span id="rLv2"></span>] Initial SPD Upgrades : +<span id="rValue2"></span> Lv (Price : <span id="rPrice2"></span>)</a><br></span>
-<span id="r3"><a href="javascript:rLevelUp(3);">[Lv.<span id="rLv3"></span>] Boost Gold% per Upgrade : (Price : <span id="rPrice3"></span>)</a><br></span>
-<span id="r4"><a href="javascript:rLevelUp(4);">[Lv.<span id="rLv4"></span>] Boost ATK% per Upgrade : (Price : <span id="rPrice4"></span>)</a><br></span>
-<span id="r5"><a href="javascript:rLevelUp(5);">[Lv.<span id="rLv5"></span>] Boost Gold Income Exponent per Upgrade : (Price : <span id="rPrice5"></span>)</a><br></span>
+<span id="r3" style="display:none;"><a href="javascript:rLevelUp(3);">[Lv.<span id="rLv3"></span>] Boost Gold% per Upgrade : (Price : <span id="rPrice3"></span>)</a><br></span>
+<span id="r4" style="display:none;"><a href="javascript:rLevelUp(4);">[Lv.<span id="rLv4"></span>] Boost ATK% per Upgrade : (Price : <span id="rPrice4"></span>)</a><br></span>
+<span id="r5" style="display:none;"><a href="javascript:rLevelUp(5);">[Lv.<span id="rLv5"></span>] Boost Gold Income Exponent per Upgrade : (Price : <span id="rPrice5"></span>)</a><br></span>
+<br><br>
+<a href="javascript:rpReset();">Reset RP Distribution</a><br>
 </span>
 
 <span id="m4" style="display:none;">
@@ -423,4 +434,3 @@ You can get <span id="rebGetRp" style="color:red;"></span> now.<br>
 </span>
 </body>
 </html>
-
