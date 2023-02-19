@@ -1,0 +1,436 @@
+<!doctype html>
+<html>
+<head>
+</head>
+
+<script>
+var final_atk = 1;
+var orig_atk = 1;
+var addi_atk = 0;
+var aper = 0;
+var cdmg = 1;
+var final_spd = 1;
+var gold = 0;
+var gper = 0;
+var max_gold = 0;
+var gold_tot = 0;
+var aper_tot = 0;
+var gper_tot =0;
+
+var uProg = 1;
+var u = [0,0,0,0,0,0,0,0,0,0,0];
+var u_tot = [0,0,0,0,0,0,0,0,0,0,0];
+var uMax = [-1,50,-1,-1,30,-1,30,90,50,1,1];
+var uValue = [1,0.15,3,5,0.05,0.2,0.1,1,50,20,-1];
+var uValue_init = [1,0.15,3,5,0.05,0.2,0.1,1,50,20,-1];
+var uPrice = [5,50,5e7,5e8,1e11,1e13,1e18,1e24,1e30,1e23,1e159];
+var uPrice_init = [5,50,5e7,5e8,1e11,1e13,1e18,1e24,1e30,1e23,1e159];
+
+var rp = 0;
+var max_rp = 0;
+var r_igold = 0;
+var r_ispd = 0;
+var r_iatk = 0;
+var r_gper = 0;
+var r_aper = 0;
+var r_gtotper = 0;
+
+var rProg = 2;
+var rMax = [20,-1,10,30,30,10];
+var ru = [0,0,0,0,0,0];
+var rValue = [1000,10,5,1,0.5,0.01];
+var rValue_init = [1000,10,5,1,0.5,0.01];
+var rPrice = [2,100,100,100000,100000,10000000];
+var rPrice_init = [2,100,100,100000,100000,10000000];
+
+var spd_inter;
+
+
+
+function init() {
+	final_atk = 1;
+	addi_atk = 0;
+	gold = 0;
+	gold_tot = 0;
+	init_u();
+	init_r();
+}
+function init_u() {
+	orig_atk = 1;
+	final_spd = 1;
+	aper = 0;
+	gper = 0;
+	cdmg = 100;
+}
+function init_r() {
+	r_igold = 0;
+	r_ispd = 0;
+	r_iatk = 0;
+	r_gper = 0;
+	r_aper = 0;
+	r_gtotper = 0;
+}
+function update() {
+	prepare();
+	updateProgress(gold_tot,0);
+	updateProgress(rp,1);
+	addi_atk = Math.floor(orig_atk * aper_tot/100);
+	final_atk = orig_atk + addi_atk;
+	for (var i = 0; i <= uProg; i++) { // 해금된 것까지만 출력
+		updateValue_u(i);
+		updatePrice_u(i);
+		if (i<=3 || (i>=6 && i<= 8)) document.getElementById("uValue"+i).innerHTML = abcFormat(uValue[i]);
+		document.getElementById("uPrice"+i).innerHTML = (u_tot[i]==uMax[i] ? "Infinity" : abcFormat(uPrice[i]))
+		document.getElementById("uLv"+i).innerHTML = u_tot[i] + (uMax[i] != -1 && u_tot[i]>=uMax[i] ? " (Max)" : "");
+	}
+	for (var i = 0; i <= rProg; i++) { // 해금된 것까지만 출력
+		updateValue_r(i);
+		updatePrice_r(i);
+		document.getElementById("rValue"+i).innerHTML = abcFormat(rValue[i] * (i==0 ? 1000 : 0));
+		document.getElementById("rPrice"+i).innerHTML = (ru[i]==rMax[i] ? "Infinity" : abcFormat(rPrice[i]))
+		document.getElementById("rLv"+i).innerHTML = ru[i] + (rMax[i] != -1 && ru[i]>=rMax[i] ? " (Max)" : "");
+	}
+	document.getElementById("attack").innerHTML = abcFormat(final_atk) + " (" + abcFormat(orig_atk) + " + " + abcFormat(addi_atk) + ")";
+	document.getElementById("speed").innerHTML = final_spd.toFixed(2);
+	document.getElementById("gold").innerHTML = abcFormat(gold_tot);
+	document.getElementById("rebCond").innerHTML = "[" + abcFormat(Math.max(1e9,1e9*(r_igold/1e6))) + "]";
+	restrictedDisplay();
+	getInfo();
+}
+function prepare() {
+	u_tot = u;
+	u_tot[0] = u[0] + r_iatk;
+	u_tot[1] = u[1] + r_ispd;
+	aper_tot = aper + r_aper*u[2];
+	gper_tot = gper + r_gper*u[3];
+	gold_tot = gold + r_igold;
+}
+function restrictedDisplay() {
+	if (gold_tot >= 1e9 || max_rp > 0) {
+		document.getElementById("rebDisp").style.display = "inline";
+		document.getElementById("rpDisp").style.display = "inline";
+		document.getElementById("rp").innerHTML = abcFormat(rp);
+		document.getElementById("getrp").innerHTML = abcFormat(getRP());
+		document.getElementById("rebGetRp").innerHTML = "[" + abcFormat(getRP()) + "] RP";
+	}
+}
+function updateProgress(x,y) {
+	if (y==0) {
+		if (x>1e216) uProg = 10;
+		else if (x>1e21) uProg = 9;
+		else if (x>1e16) uProg = 6;
+		else if (x>1e12) uProg = 5;
+		else if (x>1e10) uProg = 4;
+		else if (x>5e7) uProg = 3;
+		else if (x>5e6) uProg = 2;
+		for(var i = 2; i <= uProg; i++) document.getElementById("u"+i).style.display = "inline";
+		if (!u_tot[9]) {
+			document.getElementById("u7").style.display = "none";
+			document.getElementById("u8").style.display = "none";
+		}
+	} else if (y==1) {
+		if (x>1e6) rProg = 5;
+		else if (x>1e4) rProg = 4;
+		for(var i = 3; i <= rProg; i++) document.getElementById("r"+i).style.display = "inline";
+	}
+}
+function update_onLoad() {
+	for (var i = 0; i <= uProg; i++) { // 해금된 것까지만 로드
+		updateValue_u(i);
+		updatePrice_u(i);
+		updateValue_u_onLoad(i,1);
+	}
+	for (var i = 0; i <= rProg; i++) { // 해금된 것까지만 로드
+		updateValue_r(i);
+		updatePrice_r(i);
+		updateValue_r_onLoad(i);
+	}
+	update();
+	clearInterval(spd_inter);
+	spd_inter = setInterval(autoGold,1000/final_spd);
+}
+function updateValue_u(x) {
+	var temp = 0;
+	if (x<10) temp = uValue_init[x];
+	if (x==0) {
+		temp = 1;
+		for (var j = 0; j < u_tot[x]; j++) {
+			temp = temp + Math.floor(temp**0.6);
+		}
+	}
+	if (x==1) temp = (15+5*u_tot[x])/100;
+	uValue[x] = temp;
+}
+function updatePrice_u(x) {
+	var base = [2,3,2,1.8,900,700,1000000,150,2000,1,1];
+	uPrice[x] = uPrice_init[x] * Math.pow(base[x], u_tot[x]);
+}
+function updateValue_u_onLoad(x,y) {
+	var temp = 0;
+	if (y==0) {
+		if (x<10) temp = uValue_init[x];
+		if (x==0) {
+			temp = 1;
+			for (var j = 0; j < u_tot[x]; j++) {
+				temp = temp + Math.floor(temp**0.6);
+			}
+		}
+		if (x==1) temp = (15+5*u_tot[x])/100;
+	} else if (y==1) {
+		var tt = 0;
+		for (var i = 0; i < u_tot[x]; i++) {
+			if (x==0) {
+				tt = 1;
+				for (var j = 0; j < i; j++) {
+					tt = tt + Math.floor(tt**0.6);
+				}
+				temp += tt;
+			} else if (x==1) {
+				temp += (15+5*i)/100;
+			} else if (x<10) temp += uValue_init[x];
+		}
+	}
+	switch(x) {
+		case 0:	orig_atk += temp; break;
+		case 1:	final_spd += temp; break;
+		case 2:	aper += temp; break;
+		case 3:	gper += temp; break;
+		case 8:	cdmg += temp; break;
+		case 9:	cdmg += temp; break;
+	}
+}
+function updateValue_r(x) {
+	var temp = 0;
+	if (x<6) temp = rValue_init[x];
+	if (x==0) temp = rValue_init[x]**(ru[x]); // 1e3 1e6 1e9...
+	rValue[x] = temp;
+}
+function updatePrice_r(x) {
+	var base = [5,3,3,4,5,15];
+	rPrice[x] = rPrice_init[x] * Math.pow(base[x],ru[x]);
+}
+function updateValue_r_onLoad(x) {
+	var temp = rValue[x] * ru[x];
+	if(x==0) temp = rValue[x];
+	switch(x) {
+		case 0:	r_igold = temp; break;
+		case 1:	r_iatk += temp; break;
+		case 2:	r_ispd += temp; break;
+		case 3:	r_gper += temp; break;
+		case 4:	r_aper += temp; break;
+		case 5:	r_gtotper += temp; break;
+	}
+}
+function rebirth() {
+	if (gold_tot<max_gold) return;
+	if (gold_tot<Math.max(1e9,1e9*(r_igold/1e6))) return;
+	rp += getRP();
+	max_gold = gold_tot;
+	max_rp = getMaxRP();
+	init();
+	u_tot = [0,0,0,0,0,0,0,0,0,0,0];
+	u = [0,0,0,0,0,0,0,0,0,0,0];
+	uProg = 1;
+	rProg = 2;
+	for(var i = 2; i < u.length; i++) document.getElementById("u"+i).style.display = "none";
+	for(var i = 3; i < ru.length; i++) document.getElementById("r"+i).style.display = "none";
+	updateProgress(gold_tot,0);
+	updateProgress(max_rp,1);
+	update_onLoad();
+}
+function rpReset() {
+	ru = [0,0,0,0,0,0];
+	rValue = rValue_init;
+	init_r();
+	rp = getMaxRP();
+	rProg = 2;
+	for(var i = 3; i < ru.length; i++) document.getElementById("r"+i).style.display = "none";
+	updateProgress(max_rp,1);
+}
+function uLevelUp(x) {
+	if(uMax[x] > 0 && u[x] >= uMax[x]) return;
+	if(gold_tot < uPrice[x]) return;
+	gold -= uPrice[x];
+	updateValue_u_onLoad(x,0);
+	u[x]++;
+	clearInterval(spd_inter);
+	spd_inter = setInterval(autoGold,1000/final_spd);
+	update();
+}
+function rLevelUp(x) {
+	if(rMax[x] > 0 && ru[x] >= rMax[x]) return;
+	if(rp < rPrice[x]) return;
+	rp -= rPrice[x];
+	ru[x]++;
+	updateValue_r_onLoad(x);
+	clearInterval(spd_inter);
+	spd_inter = setInterval(autoGold,1000/final_spd);
+	update();
+}
+function autoGold() {
+	var ffatk = (Math.random() < (0.1*u_tot[9]+0.01*u_tot[7])) ? final_atk*cdmg/100 : final_atk;
+	var exp1 = 1.1+uValue[4]*u_tot[4];
+	var exp2 = 2.7+uValue[5]*u_tot[5];
+	var exp3 = 1+(uValue[6]+r_gtotper)*u_tot[6];
+	var mul1 = 1+gper_tot/100;
+	gold += Math.floor(Math.pow((ffatk**exp1)*(final_spd**exp2)*mul1,exp3));
+	document.getElementById("gold").innerHTML = abcFormat(gold_tot);
+	updateProgress(gold_tot,0);
+	updateProgress(max_rp,1);
+}
+function getInfo() {
+	document.getElementById("aperTot").innerHTML = aper_tot;
+	document.getElementById("aper").innerHTML = aper;
+	document.getElementById("rAper").innerHTML = r_aper;
+	document.getElementById("gperTot").innerHTML = gper_tot;
+	document.getElementById("gper").innerHTML = gper;
+	document.getElementById("rGper").innerHTML = r_gper;
+	document.getElementById("atkExp").innerHTML = (1.1+uValue[4]*u_tot[4]).toFixed(2);
+	document.getElementById("spdExp").innerHTML = (2.7+uValue[5]*u_tot[5]).toFixed(2);
+	document.getElementById("goldExp").innerHTML = (1+(uValue[6]+r_gtotper)*u_tot[6]).toFixed(2);
+	document.getElementById("initGold").innerHTML = abcFormat(r_igold);
+	document.getElementById("initATK").innerHTML = r_iatk;
+	document.getElementById("initSPD").innerHTML = r_ispd;
+}
+function getRP() {
+	var ret = Math.floor(Math.pow(Math.log10(1+gold_tot/100000),1+Math.log10(1+gold_tot*10)/10));
+	if (ret <= max_rp) return 0;
+	else return (ret - max_rp);
+}
+function getMaxRP() {
+	return Math.floor(Math.pow(Math.log10(1+max_gold/100000),1+Math.log10(1+max_gold*10)/10));
+}
+function openMenu(target) {
+	var menuCount = 4;
+	for(var i=1; i <= menuCount; i++) document.getElementById("m"+i).style.display = "none";
+	document.getElementById("m"+target).style.display = "inline";
+}
+function save() {
+	var temp = "";
+	temp += btoa(gold) + "/";
+	temp += btoa(JSON.stringify(u)) + "/";
+	temp += btoa(rp) + "/";
+	temp += btoa(JSON.stringify(ru)) + "/";
+	temp += btoa(max_gold) + "/";
+	temp += btoa(max_rp);
+	document.getElementById("saveloadtxt").innerHTML = "▼ Your Save Code ▼<br>" + btoa(temp) + "<br>";
+}
+function load() {
+	var data = prompt("Enter Your Save Code.");
+	if(!data) return;
+	try {
+		var t = atob(data).split('/');
+		init();
+		gold = parseFloat(atob(t[0]));
+		u = JSON.parse(atob(t[1]));
+		u_tot = u;
+		if(!t[2]) {	onLoadError(); return;	}
+		rp = parseFloat(atob(t[2]));
+		if(!t[3]) {	onLoadError(); return;	}
+		ru = JSON.parse(atob(t[3]));
+		if(!t[4]) {	onLoadError(); return;	}
+		max_gold = parseFloat(atob(t[4]));
+		if(!t[5]) {	onLoadError(); return;	}
+		max_rp = parseFloat(atob(t[5]));
+		prepare();
+		updateProgress(gold_tot,0);
+		updateProgress(max_rp,1);
+		update_onLoad();
+		document.getElementById("saveloadtxt").innerHTML = "Load Complete!";
+	} catch(e) {
+		console.log(e);
+		document.getElementById("saveloadtxt").innerHTML = "Invalid Save Data...";
+	}
+}
+function onLoadError() {
+	prepare();
+	updateProgress(gold_tot,0);
+	updateProgress(max_rp,1);
+	update_onLoad();
+	document.getElementById("saveloadtxt").innerHTML = "Old Version Load Complete!";
+}
+function abcFormat(x) {
+	// Infinity(=1.8e308) 이상에 대해서는 고려하지 않음
+	if (x < 1000) return x;
+	var a = Math.floor(Math.log10(x));
+	var b = Math.floor(a/3);
+	var c = x / Math.pow(1000, b);
+	var f = Math.floor(b/26);
+	var s = b % 26;
+	if (f>0 && s==0) {	f--; s=26	}
+	return c.toFixed(2-a+3*b) + " " + (f>0 ? String.fromCharCode(64+f) : "") + String.fromCharCode(64+s);
+}
+
+setInterval(update,200);
+spd_inter = setInterval(autoGold,1000/final_spd);
+</script>
+
+
+
+<body>
+Attack Power : <span id="attack"></span><br>
+Attack Speed : <span id="speed"></span><br>
+Gold : <span id="gold"></span><br>
+<span id="rpDisp" style="display:none;">RP : <span id="rp"></span> (+<span id="getrp"></span>)<br></span>
+<br>
+<a href="javascript:openMenu(1);" style="text-decoration:none; color:black;">[ Info ]</a> 
+<a href="javascript:openMenu(2);" style="text-decoration:none; color:black;">[ Upgrade ]</a> 
+<span id="rebDisp" style="display:none;"><a href="javascript:openMenu(3);" style="text-decoration:none; color:black;">[ Rebirth ]</a> </span>
+<a href="javascript:openMenu(4);" style="text-decoration:none; color:black;">[ Save/Load ]</a> 
+<br><br>
+
+<span id="m1" style="display:none;">
+ATK % : <span id="aperTot"></span>% (<span id="aper"></span>% + <span id="rAper"></span>%)<br>
+Gold % : <span id="gperTot"></span>% (<span id="gper"></span>% + <span id="rGper"></span>%)<br>
+Attack Power Exponent : <span id="atkExp"></span><br>
+Attack Speed Exponent : <span id="spdExp"></span><br>
+Gold Income Exponent : <span id="goldExp"></span><br>
+<span id="critInfo" style="display:none;">
+Critical Rate : <span id="crate"></span>%<br>
+Critical Damage : <span id="cdmg"></span>%<br>
+</span>
+<br>
+(Rebirth Upgrades)<br>
+Initial Gold : <span id="initGold"></span><br>
+Initial ATK Upgrade : <span id="initATK"></span> Lv<br>
+Initial SPD Upgrade : <span id="initSPD"></span> Lv<br>
+</span>
+
+<span id="m2" style="display:none;">
+<span id="u0"><a href="javascript:uLevelUp(0);">[Lv.<span id="uLv0"></span>] Increase Attack Power : ATK +<span id="uValue0"></span> (Price : <span id="uPrice0"></span>)</a><br></span>
+<span id="u1"><a href="javascript:uLevelUp(1);">[Lv.<span id="uLv1"></span>] Increase Attack Speed : SPD +<span id="uValue1"></span> (Price : <span id="uPrice1"></span>)</a><br></span>
+<span id="u2" style="display:none;"><a href="javascript:uLevelUp(2);">[Lv.<span id="uLv2"></span>] Increase Attack Power % : ATK +<span id="uValue2"></span>% (Price : <span id="uPrice2"></span>)</a><br></span>
+<span id="u3" style="display:none;"><a href="javascript:uLevelUp(3);">[Lv.<span id="uLv3"></span>] Increase Gold Income % : GOLD +<span id="uValue3"></span>% (Price : <span id="uPrice3"></span>)</a><br></span>
+<span id="u4" style="display:none;"><a href="javascript:uLevelUp(4);">[Lv.<span id="uLv4"></span>] Increase Attack Power Exponent : (Price : <span id="uPrice4"></span>)</a><br></span>
+<span id="u5" style="display:none;"><a href="javascript:uLevelUp(5);">[Lv.<span id="uLv5"></span>] Increase Attack Speed Exponent : (Price : <span id="uPrice5"></span>)</a><br></span>
+<span id="u6" style="display:none;"><a href="javascript:uLevelUp(6);">[Lv.<span id="uLv6"></span>] Gold Income Becomes Exponential : Exponent +<span id="uValue6"></span> (Price : <span id="uPrice6"></span>)</a><br></span>
+<span id="u7" style="display:none;"><a href="javascript:uLevelUp(7);">[Lv.<span id="uLv7"></span>] Increase Critical Rate : +<span id="uValue7"></span>% (Price : <span id="uPrice7"></span>)</a><br></span>
+<span id="u8" style="display:none;"><a href="javascript:uLevelUp(8);">[Lv.<span id="uLv8"></span>] Increase Critical Damage : +<span id="uValue8"></span>% (Price : <span id="uPrice8"></span>)</a><br></span>
+<span id="u9" style="display:none;"><br><a href="javascript:uLevelUp(9);">[Lv.<span id="uLv9"></span>] Unlock Critical Rate/Damage (Price : <span id="uPrice9"></span>)</a><br></span>
+<span id="u10" style="display:none;"><a href="javascript:uLevelUp(10);">[Lv.<span id="uLv10"></span>] End This Game (Price : <span id="uPrice10"></span>)</a><br></span>
+</span>
+
+<span id="m3" style="display:none;">
+You Can rebirth when your gold exceeds <span id="rebCond" style="color:red;"></span>.<br>
+When you rebirth, you can get RP(Reirth Point), proportional to your current Gold.<br>
+with your RP, you can get extra upgrades in this tab.<br>
+You can get <span id="rebGetRp" style="color:red;"></span> now.<br>
+<a href="javascript:rebirth();">▶ Rebirth! ◀</a><br>
+<br><br>
+<span id="r0"><a href="javascript:rLevelUp(0);">[Lv.<span id="rLv0"></span>] Initial Gold : <span id="rValue0"></span> (Price : <span id="rPrice0"></span>)</a><br></span>
+<span id="r1"><a href="javascript:rLevelUp(1);">[Lv.<span id="rLv1"></span>] Initial ATK Upgrades : +<span id="rValue1"></span> Lv (Price : <span id="rPrice1"></span>)</a><br></span>
+<span id="r2"><a href="javascript:rLevelUp(2);">[Lv.<span id="rLv2"></span>] Initial SPD Upgrades : +<span id="rValue2"></span> Lv (Price : <span id="rPrice2"></span>)</a><br></span>
+<span id="r3" style="display:none;"><a href="javascript:rLevelUp(3);">[Lv.<span id="rLv3"></span>] Boost Gold% per Upgrade : (Price : <span id="rPrice3"></span>)</a><br></span>
+<span id="r4" style="display:none;"><a href="javascript:rLevelUp(4);">[Lv.<span id="rLv4"></span>] Boost ATK% per Upgrade : (Price : <span id="rPrice4"></span>)</a><br></span>
+<span id="r5" style="display:none;"><a href="javascript:rLevelUp(5);">[Lv.<span id="rLv5"></span>] Boost Gold Income Exponent per Upgrade : (Price : <span id="rPrice5"></span>)</a><br></span>
+<br><br>
+<a href="javascript:rpReset();">Reset RP Distribution</a><br>
+</span>
+
+<span id="m4" style="display:none;">
+<a href="javascript:save();">Save</a><br>
+<a href="javascript:load();">Load</a><br><br>
+<span id="saveloadtxt"></span>
+</span>
+</body>
+</html>
