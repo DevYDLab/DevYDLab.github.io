@@ -202,7 +202,7 @@ function updateValue_u_onLoad(x,y) {
 function updateValue_r(x) {
 	var temp = 0;
 	if (x<6) temp = rValue_init[x];
-	if (x==0) temp = rValue_init[x]**(ru[x]); // 1e3 1e6 1e9...
+	if (x==0) temp = rValue_init[x] ** ru[x]; // 1e3 1e6 1e9...
 	rValue[x] = temp;
 }
 function updatePrice_r(x) {
@@ -211,7 +211,7 @@ function updatePrice_r(x) {
 }
 function updateValue_r_onLoad(x) {
 	var temp = rValue[x] * ru[x];
-	if(x==0) temp = rValue[x];
+	if(x==0) temp = rValue[x] ** ru[x];
 	switch(x) {
 		case 0:	r_igold = temp; break;
 		case 1:	r_iatk += temp; break;
@@ -240,17 +240,18 @@ function rebirth() {
 }
 function rpReset() {
 	ru = [0,0,0,0,0,0];
-	rValue = rValue_init;
 	init_r();
-	rp = getMaxRP();
-	rProg = 2;
-	for(var i = 3; i < ru.length; i++) document.getElementById("r"+i).style.display = "none";
-	updateProgress(max_rp,1);
-	for (var i = 0; i < ru.length; i++) { // 전체 다 초기화
+	for (var i = 0; i < ru.length; i++) { // rValue 전체 초기화. rValue = rValue_init으로 하면 주소값까지 참조하게 됨
+		rValue[i] = rValue_init[i];
 		updateValue_r(i);
 		updatePrice_r(i);
 		updateValue_r_onLoad(i);
 	}
+	prepare();
+	rp = max_rp;
+	rProg = 2;
+	for(var i = 3; i < ru.length; i++) document.getElementById("r"+i).style.display = "none";
+	updateProgress(max_rp,1);
 	update();
 	clearInterval(spd_inter);
 	spd_inter = setInterval(autoGold,1000/final_spd);
