@@ -72,8 +72,8 @@ function init_r() {
 }
 function update() {
 	prepare();
-	updateProgress(gold_tot,0);
-	updateProgress(rp,1);
+	updateProgress(max_gold,0);
+	updateProgress(max_rp,1);
 	addi_atk = Math.floor(orig_atk * aper_tot/100);
 	final_atk = orig_atk + addi_atk;
 	for (var i = 0; i <= uProg; i++) { // 해금된 것까지만 출력
@@ -98,7 +98,7 @@ function update() {
 	getInfo();
 }
 function prepare() {
-	u_tot = u;
+	for (var i = 0; i < u.lengh; i++) u_tot[i] = u[i];
 	u_tot[0] = u[0] + r_iatk;
 	u_tot[1] = u[1] + r_ispd;
 	aper_tot = aper + r_aper*u[2];
@@ -234,7 +234,7 @@ function rebirth() {
 	rProg = 2;
 	for(var i = 2; i < u.length; i++) document.getElementById("u"+i).style.display = "none";
 	for(var i = 3; i < ru.length; i++) document.getElementById("r"+i).style.display = "none";
-	updateProgress(gold_tot,0);
+	updateProgress(max_gold,0);
 	updateProgress(max_rp,1);
 	update_onLoad();
 }
@@ -285,9 +285,10 @@ function autoGold() {
 	gold += Math.floor(Math.pow((ffatk**exp1)*(final_spd**exp2)*mul1,exp3));
 	gold_tot = gold + r_igold;
 	if (gold_tot > max_gold) max_gold = gold_tot;
+	max_rp = getMaxRP();
 	document.getElementById("gold").innerHTML = abcFormat(gold_tot);
 	document.getElementById("maxGold").innerHTML = abcFormat(max_gold);
-	updateProgress(gold_tot,0);
+	updateProgress(max_gold,0);
 	updateProgress(max_rp,1);
 }
 function getInfo() {
@@ -338,7 +339,6 @@ function load() {
 		init();
 		gold = parseFloat(atob(t[0]));
 		u = JSON.parse(atob(t[1]));
-		u_tot = u;
 		if(!t[2]) {	onLoadError(); return;	}
 		rp = parseFloat(atob(t[2]));
 		if(!t[3]) {	onLoadError(); return;	}
@@ -348,7 +348,7 @@ function load() {
 		if(!t[5]) {	onLoadError(); return;	}
 		max_rp = parseFloat(atob(t[5]));
 		prepare();
-		updateProgress(gold_tot,0);
+		updateProgress(max_gold,0);
 		updateProgress(max_rp,1);
 		update_onLoad();
 		document.getElementById("saveloadtxt").innerHTML = "Load Complete!";
@@ -359,7 +359,7 @@ function load() {
 }
 function onLoadError() {
 	prepare();
-	updateProgress(gold_tot,0);
+	updateProgress(max_gold,0);
 	updateProgress(max_rp,1);
 	update_onLoad();
 	document.getElementById("saveloadtxt").innerHTML = "Old Version Load Complete!";
@@ -397,9 +397,9 @@ Gold : <span id="gold"></span><br>
 <span id="m1" style="display:none;">
 ATK % : <span id="aperTot"></span>% (<span id="aper"></span>% + <span id="rAper"></span>%)<br>
 Gold % : <span id="gperTot"></span>% (<span id="gper"></span>% + <span id="rGper"></span>%)<br>
-Attack Power Exponent : <span id="atkExpTot"></span> (1.1 +<span id="atkExp"></span>)<br>
-Attack Speed Exponent : <span id="spdExpTot"></span> (2.7 +<span id="spdExp"></span>)<br>
-Gold Income Exponent : <span id="goldExpTot"></span> (1.0 +<span id="goldExp"></span>)<br>
+Attack Power Exponent : <span id="atkExpTot"></span> (1.10 +<span id="atkExp"></span>)<br>
+Attack Speed Exponent : <span id="spdExpTot"></span> (2.70 +<span id="spdExp"></span>)<br>
+Gold Income Exponent : <span id="goldExpTot"></span> (1.00 +<span id="goldExp"></span>)<br>
 <span id="critInfo" style="display:none;">
 Critical Rate : <span id="crate"></span>%<br>
 Critical Damage : <span id="cdmg"></span>%<br>
