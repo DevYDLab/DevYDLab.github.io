@@ -246,6 +246,14 @@ function rpReset() {
 	rProg = 2;
 	for(var i = 3; i < ru.length; i++) document.getElementById("r"+i).style.display = "none";
 	updateProgress(max_rp,1);
+	for (var i = 0; i < ru.length; i++) { // 전체 다 초기화
+		updateValue_r(i);
+		updatePrice_r(i);
+		updateValue_r_onLoad(i);
+	}
+	update();
+	clearInterval(spd_inter);
+	spd_inter = setInterval(autoGold,1000/final_spd);
 }
 function uLevelUp(x) {
 	if(uMax[x] > 0 && u[x] >= uMax[x]) return;
@@ -274,7 +282,10 @@ function autoGold() {
 	var exp3 = 1+(uValue[6]+r_gtotper)*u_tot[6];
 	var mul1 = 1+gper_tot/100;
 	gold += Math.floor(Math.pow((ffatk**exp1)*(final_spd**exp2)*mul1,exp3));
+	gold_tot = gold + r_igold;
+	if (gold_tot > max_gold) max_gold = gold_tot;
 	document.getElementById("gold").innerHTML = abcFormat(gold_tot);
+	document.getElementById("maxGold").innerHTML = abcFormat(max_gold);
 	updateProgress(gold_tot,0);
 	updateProgress(max_rp,1);
 }
@@ -414,7 +425,7 @@ Initial SPD Upgrade : <span id="initSPD"></span> Lv<br>
 You Can rebirth when your gold exceeds <span id="rebCond" style="color:red;"></span>.<br>
 When you rebirth, you can get RP(Reirth Point), proportional to your current Gold.<br>
 with your RP, you can get extra upgrades in this tab.<br>
-You can get <span id="rebGetRp" style="color:red;"></span> now.<br>
+You can get <span id="rebGetRp" style="color:red;"></span> now. (Current Max Gold : <span id="maxGold"></span>)<br>
 <a href="javascript:rebirth();">▶ Rebirth! ◀</a><br>
 <br><br>
 <span id="r0"><a href="javascript:rLevelUp(0);">[Lv.<span id="rLv0"></span>] Initial Gold : <span id="rValue0"></span> (Price : <span id="rPrice0"></span>)</a><br></span>
