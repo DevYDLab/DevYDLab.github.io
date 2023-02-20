@@ -297,9 +297,12 @@ function getInfo() {
 	document.getElementById("gperTot").innerHTML = gper_tot;
 	document.getElementById("gper").innerHTML = gper;
 	document.getElementById("rGper").innerHTML = r_gper;
-	document.getElementById("atkExp").innerHTML = (1.1+uValue[4]*u_tot[4]).toFixed(2);
-	document.getElementById("spdExp").innerHTML = (2.7+uValue[5]*u_tot[5]).toFixed(2);
-	document.getElementById("goldExp").innerHTML = (1+(uValue[6]+r_gtotper)*u_tot[6]).toFixed(2);
+	document.getElementById("atkExp").innerHTML = (1uValue[4]*u_tot[4]).toFixed(2);
+	document.getElementById("spdExp").innerHTML = (uValue[5]*u_tot[5]).toFixed(2);
+	document.getElementById("goldExp").innerHTML = ((uValue[6]+r_gtotper)*u_tot[6]).toFixed(2);
+	document.getElementById("atkExpTot").innerHTML = (1.1+uValue[4]*u_tot[4]).toFixed(2);
+	document.getElementById("spdExpTot").innerHTML = (2.7+uValue[5]*u_tot[5]).toFixed(2);
+	document.getElementById("goldExpTot").innerHTML = (1+(uValue[6]+r_gtotper)*u_tot[6]).toFixed(2);
 	document.getElementById("initGold").innerHTML = abcFormat(r_igold);
 	document.getElementById("initATK").innerHTML = r_iatk;
 	document.getElementById("initSPD").innerHTML = r_ispd;
@@ -369,7 +372,7 @@ function abcFormat(x) {
 	var c = x / Math.pow(1000, b);
 	var f = Math.floor(b/26);
 	var s = b % 26;
-	if (f>0 && s==0) {	f--; s=26	}
+	if (f>0 && s==0) {	f--; s=26;	}
 	return c.toFixed(2-a+3*b) + " " + (f>0 ? String.fromCharCode(64+f) : "") + String.fromCharCode(64+s);
 }
 
@@ -394,9 +397,9 @@ Gold : <span id="gold"></span><br>
 <span id="m1" style="display:none;">
 ATK % : <span id="aperTot"></span>% (<span id="aper"></span>% + <span id="rAper"></span>%)<br>
 Gold % : <span id="gperTot"></span>% (<span id="gper"></span>% + <span id="rGper"></span>%)<br>
-Attack Power Exponent : <span id="atkExp"></span><br>
-Attack Speed Exponent : <span id="spdExp"></span><br>
-Gold Income Exponent : <span id="goldExp"></span><br>
+Attack Power Exponent : <span id="atkExpTot"></span> (1.1 +<span id="atkExp"></span>)<br>
+Attack Speed Exponent : <span id="spdExpTot"></span> (2.7 +<span id="spdExp"></span>)<br>
+Gold Income Exponent : <span id="goldExpTot"></span> (1.0 +<span id="goldExp"></span>)<br>
 <span id="critInfo" style="display:none;">
 Critical Rate : <span id="crate"></span>%<br>
 Critical Damage : <span id="cdmg"></span>%<br>
