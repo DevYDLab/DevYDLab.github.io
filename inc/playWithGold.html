@@ -28,6 +28,7 @@ var uPrice_init = [5,50,5e7,5e8,1e11,1e13,1e18,1e24,1e30,1e23,1e159];
 
 var rp = 0;
 var max_rp = 0;
+var rebirth_max_gold = 0;
 var r_igold = 0;
 var r_ispd = 0;
 var r_iatk = 0;
@@ -225,8 +226,8 @@ function rebirth() {
 	if (gold_tot<max_gold) return;
 	if (gold_tot<Math.max(1e9,1e9*(r_igold/1e6))) return;
 	rp += getRP();
-	max_gold = gold_tot;
 	max_rp = getMaxRP();
+	rebirth_max_gold = max_gold;
 	init();
 	u_tot = [0,0,0,0,0,0,0,0,0,0,0];
 	u = [0,0,0,0,0,0,0,0,0,0,0];
@@ -309,12 +310,12 @@ function getInfo() {
 	document.getElementById("initSPD").innerHTML = r_ispd;
 }
 function getRP() {
-	var ret = Math.floor(Math.pow(Math.log10(1+gold_tot/100000),1+Math.log10(1+gold_tot*10)/10));
+	var ret = Math.floor(Math.pow(Math.log10(1+max_gold/100000),1+Math.log10(1+max_gold*10)/10));
 	if (ret <= max_rp) return 0;
 	else return (ret - max_rp);
 }
 function getMaxRP() {
-	return Math.floor(Math.pow(Math.log10(1+max_gold/100000),1+Math.log10(1+max_gold*10)/10));
+	return Math.floor(Math.pow(Math.log10(1+rebirth_max_gold/100000),1+Math.log10(1+rebirth_max_gold*10)/10));
 }
 function openMenu(target) {
 	var menuCount = 4;
@@ -328,7 +329,8 @@ function save() {
 	temp += btoa(rp) + "/";
 	temp += btoa(JSON.stringify(ru)) + "/";
 	temp += btoa(max_gold) + "/";
-	temp += btoa(max_rp);
+	temp += btoa(max_rp) + "/";
+	temp += btoa(rebirth_max_gold);
 	document.getElementById("saveloadtxt").innerHTML = "▼ Your Save Code ▼<br>" + btoa(temp) + "<br>";
 }
 function load() {
@@ -347,6 +349,8 @@ function load() {
 		max_gold = parseFloat(atob(t[4]));
 		if(!t[5]) {	onLoadError(); return;	}
 		max_rp = parseFloat(atob(t[5]));
+		if(!t[6]) {	onLoadError(); return;	}
+		rebirth_max_gold = parseFloat(atob(t[6]));
 		prepare();
 		updateProgress(max_gold,0);
 		updateProgress(max_rp,1);
