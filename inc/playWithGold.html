@@ -98,7 +98,7 @@ function update() {
 	getInfo();
 }
 function prepare() {
-	for (var i = 0; i < u.lengh; i++) u_tot[i] = u[i];
+	for (var i = 0; i < u.length; i++) u_tot[i] = u[i];
 	u_tot[0] = u[0] + r_iatk;
 	u_tot[1] = u[1] + r_ispd;
 	aper_tot = aper + r_aper*u[2];
@@ -123,7 +123,7 @@ function updateProgress(x,y) {
 		else if (x>1e10) uProg = 4;
 		else if (x>5e7) uProg = 3;
 		else if (x>5e6) uProg = 2;
-		for(var i = 2; i <= uProg; i++) document.getElementById("u"+i).style.display = "inline";
+		for(var i = 0; i <= uProg; i++) document.getElementById("u"+i).style.display = "inline";
 		if (!u_tot[9]) {
 			document.getElementById("u7").style.display = "none";
 			document.getElementById("u8").style.display = "none";
@@ -131,7 +131,7 @@ function updateProgress(x,y) {
 	} else if (y==1) {
 		if (x>1e6) rProg = 5;
 		else if (x>1e4) rProg = 4;
-		for(var i = 3; i <= rProg; i++) document.getElementById("r"+i).style.display = "inline";
+		for(var i = 0; i <= rProg; i++) document.getElementById("r"+i).style.display = "inline";
 	}
 }
 function update_onLoad() {
