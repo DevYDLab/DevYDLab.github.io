@@ -1,0 +1,75 @@
+<!doctype html>
+<html>
+<head>
+</head>
+<script>
+var gold = 0;
+var u = [0,0,0,0,0,0,0,0,0,0,0];
+var rp = 0;
+var ru = [0,0,0,0,0,0];
+var max_gold = 0;
+var max_rp = 0;
+var rebirth_max_gold = 0;
+
+function encode() {
+	var data = prompt("Enter Your Decoded Data.");
+	if (!data) return;
+	try {
+		var t = data.split('/');
+		gold = parseFloat(t[0]);
+		u = JSON.parse(t[1]);
+		rp = parseFloat(t[2]);
+		ru = JSON.parse(t[3]);
+		max_gold = parseFloat(t[4]);
+		max_rp = parseFloat(t[5]);
+		rebirth_max_gold = parseFloat(t[6]);
+
+		var temp = "";
+		temp += btoa(gold) + "/";
+		temp += btoa(JSON.stringify(u)) + "/";
+		temp += btoa(rp) + "/";
+		temp += btoa(JSON.stringify(ru)) + "/";
+		temp += btoa(max_gold) + "/";
+		temp += btoa(max_rp) + "/";
+		temp += btoa(rebirth_max_gold);
+		document.getElementById('saveloadtxt').innerHTML = "▼ Encode Complete! ▼<br><br>" + btoa(temp) + "<br>";
+	} catch(e) {
+		console.log(e);
+		document.getElementById('saveloadtxt').innerHTML = "Invalid Decoded Data...";
+	}
+}
+function decode() {
+	var data = prompt("Enter Your Decoded Data.");
+	if (!data) return;
+	try {
+		var t = atob(data).split('/');
+		gold = parseFloat(atob(t[0]));
+		u = JSON.parse(atob(t[1]));
+		rp = parseFloat(atob(t[2]));
+		ru = JSON.parse(atob(t[3]));
+		max_gold = parseFloat(atob(t[4]));
+		max_rp = parseFloat(atob(t[5]));
+		rebirth_max_gold = parseFloat(atob(t[6]));
+
+		var str = "";
+		str += gold + "/";
+		str += JSON.stringify(u) + "/";
+		str += rp + "/";
+		str += JSON.stringify(ru) + "/";
+		str += max_gold + "/";
+		str += max_rp + "/";
+		str += rebirth_max_gold;
+		document.getElementById('saveloadtxt').innerHTML = "▼ Decode Complete! ▼<br><br>" + str + "<br>";
+	} catch(e) {
+		console.log(e);
+		document.getElementById('saveloadtxt').innerHTML = "Invalid Encoded Data...";
+	}
+}
+</script>
+<body>
+<br>
+Play With Gold Data Encode/Decoder<br><br>
+<a href="javascript:encode();">Encode</a> <a href="javascript:decode();">Decode</a><br><br>
+<span id="saveloadtxt"></span><br>
+</body>
+</html>
